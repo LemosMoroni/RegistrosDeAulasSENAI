@@ -60,14 +60,31 @@ async function addTeacher() {
 
   setLoading('btn-add', true);
 
+  // Salva a sessão do admin antes do signUp (que pode criar sessão do novo usuário)
+  const { data: { session: adminSession } } = await db.auth.getSession();
+
+  // Suprime o listener de auth para não trocar a sessão do admin durante o cadastro
+  window._suppressAuthChange = true;
   const { data, error } = await db.auth.signUp({
     email, password: pass, options: { data: { name } }
   });
+  window._suppressAuthChange = false;
 
   if (error) { showMsg('add-msg', 'error', error.message); setLoading('btn-add', false); return; }
 
   if (data.user) {
     await db.from('profiles').upsert({ id: data.user.id, name, email, role });
+
+    // Se o signUp criou uma nova sessão (usuário sem confirmação de e-mail),
+    // restaura a sessão do admin para não deslogar quem está usando o painel.
+    if (data.session && adminSession) {
+      window._suppressAuthChange = true;
+      await db.auth.setSession({
+        access_token:  adminSession.access_token,
+        refresh_token: adminSession.refresh_token,
+      });
+      window._suppressAuthChange = false;
+    }
   }
 
   setLoading('btn-add', false);

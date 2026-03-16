@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fotos Aulas</title>
+<title>Registros de aulas - SENAI</title>
 
 <!-- Dependências externas -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -31,10 +31,7 @@
       </div>
       <div class="auth-features">
         <div class="auth-feat"><span class="feat-dot"></span>Registro diário de fotos e descrições</div>
-        <div class="auth-feat"><span class="feat-dot"></span>Galeria com filtros por data e professor</div>
-        <div class="auth-feat"><span class="feat-dot"></span>Relatório PDF por professor e período</div>
-        <div class="auth-feat"><span class="feat-dot"></span>Painel administrativo completo</div>
-        <div class="auth-feat"><span class="feat-dot"></span>Produto desenvolvido no SENAI de Lages</div>
+        <div class="auth-feat"><span class="feat-dot"></span>Desenvolvido no SENAI de Lages</div>
       </div>
     </div>
 
@@ -123,8 +120,7 @@
             <label>Fotos da aula <span class="label-hint">até 3 fotos</span></label>
             <div id="photo-slots" class="photo-slots"></div>
             <div class="photo-count-label" id="photo-count">Nenhuma foto selecionada</div>
-            <input type="file" id="file-inp" accept="image/*" class="hidden"
-                   onchange="handleFile(event)">
+            <!-- O input de arquivo é criado dinamicamente em upload.js para compatibilidade com câmera mobile -->
           </div>
 
           <div class="field">
@@ -159,7 +155,7 @@
 
       <div class="filters">
         <input type="text"  id="f-search"      placeholder="Buscar por título..."
-               oninput="renderGallery()" style="flex:1;min-width:180px">
+               oninput="filterAndRenderGallery()" style="flex:1;min-width:180px">
         <input type="date"  id="f-date-filter" onchange="renderGallery()">
         <select             id="f-teacher"     onchange="renderGallery()">
           <option value="">Todos os professores</option>

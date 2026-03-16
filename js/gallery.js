@@ -10,8 +10,9 @@ async function loadProfiles() {
   allProfiles = data || [];
 }
 
+// Busca registros no servidor (chamada API) e popula os filtros de professor/data.
+// Deve ser chamada apenas quando os filtros de data ou professor mudarem.
 async function renderGallery() {
-  const search   = document.getElementById('f-search').value.toLowerCase();
   const dateF    = document.getElementById('f-date-filter').value;
   const teacherF = document.getElementById('f-teacher').value;
 
@@ -43,7 +44,14 @@ async function renderGallery() {
 
   allRecords = data || [];
 
-  // Filtro de busca local
+  // Aplica filtro de busca local após carregar
+  filterAndRenderGallery();
+}
+
+// Aplica apenas o filtro de busca local (sem chamada à API).
+// Chamada a cada keystroke do campo de busca — muito mais rápido.
+function filterAndRenderGallery() {
+  const search = document.getElementById('f-search').value.toLowerCase();
   let records = allRecords;
   if (search) {
     records = records.filter(r =>
@@ -51,7 +59,6 @@ async function renderGallery() {
       (r.description || '').toLowerCase().includes(search)
     );
   }
-
   renderGalleryGrid(records);
 }
 

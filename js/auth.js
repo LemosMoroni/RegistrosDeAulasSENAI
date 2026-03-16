@@ -3,10 +3,10 @@
 // ══════════════════════════════════════════
 
 async function init() {
-  const { data: { session } } = await db.auth.getSession();
-  if (session) await loadApp(session.user);
-
+  // Supabase v2 dispara INITIAL_SESSION imediatamente ao registrar o listener,
+  // então não precisamos chamar getSession() separadamente (evita duplo loadApp).
   db.auth.onAuthStateChange(async (_event, sess) => {
+    if (window._suppressAuthChange) return;
     if (sess) await loadApp(sess.user);
     else showAuthScreen();
   });

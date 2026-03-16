@@ -59,25 +59,50 @@ function renderPhotoSlots() {
 }
 
 function triggerSlotInput(index) {
-  const inp = document.getElementById('file-inp');
+  // Sempre cria um novo elemento <input> para garantir que o evento 'change'
+  // dispare corretamente no iOS e Android, inclusive ao usar a câmera.
+  const old = document.getElementById('file-inp');
+  if (old) old.remove();
+
+  const inp = document.createElement('input');
+  inp.type      = 'file';
+  inp.id        = 'file-inp';
+  inp.accept    = 'image/*';
+  inp.className = 'hidden';
   inp.dataset.slotIndex = index;
-  inp.value = '';
-  inp.click();
+
+  // Permite selecionar até 3 fotos de uma vez quando o slot está vazio
+  if (!selectedFiles[index]) {
+    inp.multiple = true;
+  }
+
+  inp.addEventListener('change', handleFile);
+  document.body.appendChild(inp);
+
+  // Pequeno timeout necessário no iOS para que o DOM registre o elemento antes do clique
+  setTimeout(() => inp.click(), 50);
 }
 
 function handleFile(e) {
-  const file  = e.target.files[0];
-  const index = parseInt(e.target.dataset.slotIndex ?? 0);
-  if (!file) return;
+  const files      = Array.from(e.target.files);
+  const startIndex = parseInt(e.target.dataset.slotIndex ?? 0);
 
-  if (file.size > MAX_SIZE) {
-    toast(`Foto ${index + 1} muito grande. Máximo 5 MB por foto.`, 'error');
-    return;
-  }
+  if (!files.length) return;
 
-  selectedFiles[index] = file;
-  // Remove buracos no array
-  selectedFiles = selectedFiles.filter(Boolean);
+  files.forEach((file, i) => {
+    const targetIndex = startIndex + i;
+    if (targetIndex >= MAX_PHOTOS) return; // Nunca ultrapassa 3 slots
+
+    if (file.size > MAX_SIZE) {
+      toast(`Foto ${targetIndex + 1} muito grande. Máximo 5 MB por foto.`, 'error');
+      return;
+    }
+
+    selectedFiles[targetIndex] = file;
+  });
+
+  // Remove buracos e limita ao máximo de fotos
+  selectedFiles = selectedFiles.filter(Boolean).slice(0, MAX_PHOTOS);
   renderPhotoSlots();
 }
 
@@ -146,7 +171,9 @@ function resetUploadForm() {
   document.getElementById('f-title').value = '';
   document.getElementById('f-desc').value  = '';
   document.getElementById('f-date').value  = today();
-  document.getElementById('file-inp').value = '';
+  // Remove o input dinâmico de arquivo se existir
+  const inp = document.getElementById('file-inp');
+  if (inp) inp.remove();
   selectedFiles = [];
   renderPhotoSlots();
 }
