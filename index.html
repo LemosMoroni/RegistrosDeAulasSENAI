@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fotos Aulas</title>
+
+<!-- Dependências externas -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Estilos -->
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     TELA DE AUTENTICAÇÃO
+════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-panel">
+
+    <!-- Painel esquerdo (decorativo) -->
+    <div class="auth-left">
+      <div>
+        <img src="Logo-SENAI_EP.png" alt="SENAI" class="auth-logo">
+        <div class="auth-divider"></div>
+        <div class="auth-tagline">
+          Banco de dados fotográfico de aulas para professores
+        </div>
+      </div>
+      <div class="auth-features">
+        <div class="auth-feat"><span class="feat-dot"></span>Registro diário de fotos e descrições</div>
+        <div class="auth-feat"><span class="feat-dot"></span>Galeria com filtros por data e professor</div>
+        <div class="auth-feat"><span class="feat-dot"></span>Relatório PDF por professor e período</div>
+        <div class="auth-feat"><span class="feat-dot"></span>Painel administrativo completo</div>
+        <div class="auth-feat"><span class="feat-dot"></span>Produto desenvolvido no SENAI de Lages</div>
+      </div>
+    </div>
+
+    <!-- Painel direito (formulários) -->
+    <div class="auth-right">
+
+      <!-- Login -->
+      <div id="view-login">
+        <h2>Olá Professor(a)</h2>
+        <p>Entre com suas credenciais para acessar o sistema</p>
+        <div id="login-msg"></div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="login-email" placeholder="seu@email.com"
+                 onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="login-pass" placeholder="••••••••"
+                 onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-login" onclick="doLogin()">Entrar</button>
+        <div class="auth-switch">
+          Não tem conta? <span onclick="showView('register')">Criar uma conta</span>
+        </div>
+      </div>
+
+      <!-- Registro -->
+      <div id="view-register" class="hidden">
+        <h2>Criar conta</h2>
+        <p>Preencha os dados para se registrar</p>
+        <div id="reg-msg"></div>
+        <div class="field">
+          <label>Nome completo</label>
+          <input type="text" id="reg-name" placeholder="Seu nome">
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="reg-email" placeholder="seu@email.com">
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="reg-pass" placeholder="mínimo 6 caracteres">
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-reg" onclick="doRegister()">Criar conta</button>
+        <div class="auth-switch">
+          Já tem conta? <span onclick="showView('login')">Entrar</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     APLICAÇÃO PRINCIPAL
+════════════════════════════════════════ -->
+<div id="app-screen" class="hidden">
+
+  <!-- Barra de navegação -->
+  <nav>
+    <img src="Logo-SENAI_EP.png" alt="SENAI" class="nav-logo">
+    <div class="nav-divider"></div>
+    <span class="nav-system-name">Registro de Aulas</span>
+    <div class="nav-tabs">
+      <button class="tab active" id="tab-upload"  onclick="showTab('upload')">＋ Registrar Aula</button>
+      <button class="tab"        id="tab-gallery" onclick="showTab('gallery')">Galeria</button>
+      <button class="tab hidden" id="tab-admin"   onclick="showTab('admin')">Painel Admin</button>
+    </div>
+    <div class="nav-right">
+      <span class="user-pill" id="user-pill">—</span>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()">Sair</button>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <!-- ── REGISTRAR AULA ── -->
+    <div id="view-upload">
+      <div class="page-title">Registrar nova aula</div>
+      <div class="form-card">
+        <div class="two-col">
+
+          <div class="field full">
+            <label>Fotos da aula <span class="label-hint">até 3 fotos</span></label>
+            <div id="photo-slots" class="photo-slots"></div>
+            <div class="photo-count-label" id="photo-count">Nenhuma foto selecionada</div>
+            <input type="file" id="file-inp" accept="image/*" class="hidden"
+                   onchange="handleFile(event)">
+          </div>
+
+          <div class="field">
+            <label>Título da aula</label>
+            <input type="text" id="f-title" placeholder="Ex: Matemática – Frações">
+          </div>
+
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="f-date">
+          </div>
+
+          <div class="field full">
+            <label>Descrição / Observações</label>
+            <textarea id="f-desc"
+              placeholder="Descreva a aula, atividades realizadas, objetivos alcançados..."></textarea>
+          </div>
+
+        </div>
+        <button class="btn btn-primary" id="btn-save" onclick="saveRecord()"
+                style="margin-top:.5rem">Salvar registro</button>
+      </div>
+    </div>
+
+
+    <!-- ── GALERIA ── -->
+    <div id="view-gallery" class="hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px">
+        <div class="page-title" style="margin:0">Galeria de aulas</div>
+        <button class="btn btn-warning btn-sm" onclick="showPdfModal()">Gerar relatório PDF</button>
+      </div>
+
+      <div class="filters">
+        <input type="text"  id="f-search"      placeholder="Buscar por título..."
+               oninput="renderGallery()" style="flex:1;min-width:180px">
+        <input type="date"  id="f-date-filter" onchange="renderGallery()">
+        <select             id="f-teacher"     onchange="renderGallery()">
+          <option value="">Todos os professores</option>
+        </select>
+      </div>
+
+      <div id="gallery-grid" class="gallery-grid">
+        <div class="page-loader" style="grid-column:1/-1">
+          <div class="spinner" style="border-color:rgba(27,107,74,.2);border-top-color:var(--accent)"></div>
+          Carregando...
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── PAINEL ADMIN ── -->
+    <div id="view-admin" class="hidden">
+      <div class="page-title">Painel administrativo</div>
+
+      <!-- Estatísticas -->
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card"><div class="stat-label">Registros</div><div class="stat-value">—</div></div>
+        <div class="stat-card"><div class="stat-label">Professores</div><div class="stat-value">—</div></div>
+        <div class="stat-card"><div class="stat-label">Hoje</div><div class="stat-value">—</div></div>
+        <div class="stat-card"><div class="stat-label">Com fotos</div><div class="stat-value">—</div></div>
+      </div>
+
+      <!-- Adicionar usuário -->
+      <div class="section-card">
+        <div class="section-header">Adicionar professor / administrador</div>
+        <div class="add-form">
+          <div id="add-msg"></div>
+          <div class="two-col">
+            <div class="field">
+              <label>Nome completo</label>
+              <input type="text" id="new-name" placeholder="Nome do professor">
+            </div>
+            <div class="field">
+              <label>E-mail</label>
+              <input type="email" id="new-email" placeholder="professor@escola.com">
+            </div>
+            <div class="field">
+              <label>Senha inicial</label>
+              <input type="password" id="new-pass" placeholder="mínimo 6 caracteres">
+            </div>
+            <div class="field">
+              <label>Perfil</label>
+              <select id="new-role">
+                <option value="teacher">Professor</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-add" onclick="addTeacher()">
+            Adicionar usuário
+          </button>
+        </div>
+      </div>
+
+      <!-- Lista de usuários -->
+      <div class="section-card">
+        <div class="section-header">Usuários cadastrados</div>
+        <div id="teachers-list">
+          <div class="page-loader">
+            <div class="spinner" style="border-color:rgba(27,107,74,.2);border-top-color:var(--accent)"></div>
+            Carregando...
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     MODAL — GERADOR DE PDF
+════════════════════════════════════════ -->
+<div id="pdf-modal" class="modal-wrap hidden">
+  <div class="modal">
+    <h3>Gerar relatório PDF</h3>
+    <div class="field">
+      <label>Professor</label>
+      <select id="pdf-teacher">
+        <option value="">Todos os professores</option>
+      </select>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Data inicial</label><input type="date" id="pdf-from"></div>
+      <div class="field"><label>Data final</label>  <input type="date" id="pdf-to"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closePdfModal()">Cancelar</button>
+      <button class="btn btn-warning btn-sm" id="btn-pdf" onclick="generatePDF()">Gerar PDF</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCRIPTS (ordem importa!)
+════════════════════════════════════════ -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/gallery.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/pdf.js"></script>
+<script>
+  // Ponto de entrada da aplicação
+  renderPhotoSlots();
+  init();
+</script>
+
+</body>
+</html>
