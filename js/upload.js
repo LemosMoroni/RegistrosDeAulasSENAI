@@ -79,8 +79,9 @@ function triggerSlotInput(index) {
   inp.addEventListener('change', handleFile);
   document.body.appendChild(inp);
 
-  // Pequeno timeout necessário no iOS para que o DOM registre o elemento antes do clique
-  setTimeout(() => inp.click(), 50);
+  // DEVE ser chamado de forma síncrona dentro do handler de gesto do usuário.
+  // setTimeout quebraria o contexto e o browser bloquearia o seletor de arquivos/câmera.
+  inp.click();
 }
 
 function handleFile(e) {
