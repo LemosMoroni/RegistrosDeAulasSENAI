@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: #F2F5F9;
+  color: #0D1B2A;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb {
+  background: #C8D5E5;
+  border-radius: 3px;
+}
+
+@keyframes bounce-in {
+  0%   { transform: translateY(16px); opacity: 0; }
+  60%  { transform: translateY(-4px); opacity: 1; }
+  100% { transform: translateY(0); }
+}
+.animate-bounce-in {
+  animation: bounce-in 0.35s ease forwards;
+}
