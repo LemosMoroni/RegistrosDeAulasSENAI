@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
-import { db }             from './lib/supabase'
-import LoginPage          from './pages/LoginPage'
-import SetPasswordPage    from './pages/SetPasswordPage'
-import UploadPage         from './pages/UploadPage'
-import GalleryPage        from './pages/GalleryPage'
-import AdminPage          from './pages/AdminPage'
-import PdfPage            from './pages/PdfPage'
-import Navbar             from './components/Navbar'
-import ToastContainer     from './components/Toast'
+import { db }               from './lib/supabase'
+import LoginPage            from './pages/LoginPage'
+import SetPasswordPage      from './pages/SetPasswordPage'
+import EmailConfirmedPage   from './pages/EmailConfirmedPage'
+import UploadPage           from './pages/UploadPage'
+import GalleryPage          from './pages/GalleryPage'
+import AdminPage            from './pages/AdminPage'
+import PdfPage              from './pages/PdfPage'
+import Navbar               from './components/Navbar'
+import ToastContainer       from './components/Toast'
 
 function App() {
   const [screen, setScreen]   = useState(null)
@@ -16,10 +17,32 @@ function App() {
   const [tab, setTab]         = useState('upload')
 
   useEffect(() => {
+    // Detecta token de confirmação de e-mail na URL
+    const params    = new URLSearchParams(window.location.search)
+    const tokenHash = params.get('token_hash')
+    const type      = params.get('type')
+
+    if (tokenHash && type === 'signup') {
+      // Verifica o token e mostra tela de confirmação
+      db.auth.verifyOtp({ token_hash: tokenHash, type: 'signup' })
+        .then(({ error }) => {
+          if (!error) {
+            // Desloga imediatamente — usuário deve logar manualmente
+            db.auth.signOut()
+            window.history.replaceState({}, '', window.location.pathname)
+            setScreen('email-confirmed')
+          } else {
+            setScreen('auth')
+          }
+        })
+      return
+    }
+
     db.auth.getSession().then(({ data: { session } }) => {
       if (session) loadProfile(session.user)
       else setScreen('auth')
     })
+
     const { data: listener } = db.auth.onAuthStateChange((_event, session) => {
       if (_event === 'SIGNED_OUT') {
         setUser(null); setProfile(null)
@@ -42,7 +65,6 @@ function App() {
       setScreen('set-password')
     } else {
       setProfile(data)
-      // Se must_change_password = true, mostra tela de definir senha
       setScreen(data.must_change_password ? 'set-password' : 'app')
     }
   }
@@ -51,6 +73,10 @@ function App() {
     <div className="min-h-screen bg-senai-50 flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-senai-600 border-t-transparent rounded-full animate-spin" />
     </div>
+  )
+
+  if (screen === 'email-confirmed') return (
+    <><EmailConfirmedPage /><ToastContainer /></>
   )
 
   if (screen === 'auth') return (
