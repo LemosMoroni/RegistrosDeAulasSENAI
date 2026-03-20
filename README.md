@@ -203,6 +203,6 @@ Redirect URLs: https://lemosmoroni.github.io/RegistrosDeAulasSENAI/**
 
 <div align="center">
 
-Desenvolvido para o **SENAI - Lages por Vitor Lemos Moroni**
+Desenvolvido para o **SENAI - Vitor Lemos Moroni**
 
 </div>
