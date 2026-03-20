@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { db } from '../lib/supabase'
+import senaiLogo from '/public/Logo-SENAI_EP.png'
 
 export default function Navbar({ profile, tab, setTab }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -27,7 +28,7 @@ export default function Navbar({ profile, tab, setTab }) {
       <nav className="bg-white border-b-2 border-senai-600 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
 
-          <img src="/Logo-SENAI_EP.png" alt="SENAI" className="h-8 w-auto flex-shrink-0" />
+          <img src={senaiLogo} alt="SENAI" className="h-8 w-auto flex-shrink-0" />
           <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
           <span className="text-senai-600 text-sm font-semibold hidden sm:block">Registro de Aulas</span>
 

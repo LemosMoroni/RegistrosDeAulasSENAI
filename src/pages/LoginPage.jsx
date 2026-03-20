@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { db } from '../lib/supabase'
+import senaiLogo from '/public/Logo-SENAI_EP.png'
 
 function EmailSentScreen({ email, onBack }) {
   return (
@@ -74,7 +75,7 @@ export default function LoginPage() {
 
         <div className="hidden md:flex flex-col justify-between bg-senai-900 w-80 flex-shrink-0 p-8">
           <div>
-            <img src="/Logo-SENAI_EP.png" alt="SENAI" className="w-44 mb-6 brightness-0 invert" />
+            <img src={senaiLogo} alt="SENAI" className="w-44 mb-6 brightness-0 invert" />
             <p className="text-white/60 text-sm leading-relaxed">Banco de dados fotográfico de aulas para professores</p>
           </div>
           <ul className="space-y-3">
@@ -87,7 +88,7 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white flex-1 p-8">
-          <h2 className="text-senai-600 font-semibold text-2xl mb-1">{mode === 'login' ? 'Bem-vindo de volta' : 'Criar conta'}</h2>
+          <h2 className="text-senai-600 font-semibold text-2xl mb-1">{mode === 'login' ? 'Bem-vindo professor(a)!' : 'Criar conta'}</h2>
           <p className="text-gray-400 text-sm mb-6">{mode === 'login' ? 'Entre com suas credenciais' : 'Preencha os dados para se registrar'}</p>
 
           {error && <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-r-lg">{error}</div>}
